@@ -1,17 +1,26 @@
 import numpy as np
 import sympy as sym
-from scipy.optimize import line_search
+from numdifftools import Gradient
+from scipy.optimize import minimize_scalar
 
 # Showing functions and computing its gradiant symbolically
 x, y = sym.symbols('x, y')
 f = 8 * x**2 + 4 * y ** 2 - 9
-Df = np.array(sym.Matrix([f]).jacobian(sym.Matrix(list(f.free_symbols))))
+Df = sym.Matrix([f]).jacobian(sym.Matrix(list(f.free_symbols)))
 
-# Finding the best alpha value using scipy.optimize.line_search: https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.line_search.html
-f = lambda x : 8*(x[0]**2) + 4*(x[1]**2) - 9    # Function
-Df = lambda x : np.array([16*x[0], 8*x[1]])     # Gradient of the function
-x0 = np.array([2, 4])                           # Initial value
-d = Df(x0) * -1                                 # Descent direction(In Gradient method, it is set to -∇f(x) )
-search = line_search(f, Df, x0, d)
-alpha = search[0]
-print(alpha)
+# f = lambda x : 7*(x[0]**3) + 5*(x[0]**2) - x[1]**2 + 5*x[0] - 3*x[1] + 10
+f = lambda x : x[0]**2 + x[1]**2 - 2*x[0] - 2*x[1] + 2
+# x0 = np.random.rand(2,) * 10
+x0 = np.array([2000, 8000])
+d = lambda x : Gradient(f)(x)
+e = 1e-5
+while True:
+    t = minimize_scalar(lambda alpha: f(x0 - alpha * d(x0))).x
+    x1 = x0 - t*d(x0)
+    if np.abs(f(x1) - f(x0)) < e:
+        break
+    x0 = x1
+
+print(x0)
+# print(t)
+print(f(x0))
