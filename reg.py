@@ -1,7 +1,5 @@
 import re
 
-# if __name__ == '__main__':
-
 def polynomial(poly: str):
     # Extract variables from the polynomial
     variables = sorted(list(set(re.findall(r'[a-zA-Z]', poly))))
