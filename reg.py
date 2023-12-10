@@ -1,40 +1,24 @@
-import re
+import numpy as np
+import sympy
 
-def polynomial(poly: str):
-    # Extract variables from the polynomial
-    variables = sorted(list(set(re.findall(r'[a-zA-Z]', poly))))
+def polynomial(poly: str):      # Input: polynomial function as a string
 
-    # Replace '^' with '**' for Python's power operator
-    poly = poly.replace('^', '**')
-    
-    # Create lambda function
-    func = eval('lambda {}: {}'.format(','.join(variables), poly))
-    
-    return func, len(variables)
+    # Finding all letters(variables), storing them in a set (for uniqueness), converting to a sorted array.
+    varset = sorted(list(set(''.join(c for c in poly if c.isalpha()).lower())))
 
+    # Creating an array to store each variable as a symbol.
+    vararr = [None for i in range(len(varset))]
+    for i in range(len(varset)):
+        vararr[i] = sympy.symbols(varset[i])    # The variables will be addressed and initialized as the elements of this array.
 
-d = 2
-x = [1,2]
+    # Symbolic expression of polynomial.
+    symbolic = sympy.sympify(poly)
 
-polynomial = '2*x1^3 + 4*x1^2 -8*x1 + 3*x2^4 - 2*x2^2 - 5*x2 + x1*x2 + 8'
+    # Converting symbolic expression to a lambda function.
+    f = sympy.lambdify(vararr, poly, "numpy")
 
-# separate all words except xi
-tmp = ""
-for i in polynomial:
-    if i == "x":
-        tmp += i
-    else:
-        tmp += f"{i} "
-polynomial = tmp
-
-# replace xi with x[i-1]
-for i in range(d):
-    polynomial = polynomial.replace(f'x{i+1}',f'x[{i}]')
-
-# replace '^' with '**'
-polynomial = polynomial.replace('^','**')
-
-# defice function using eval
-f = lambda x: eval(polynomial)
-
-print(f([0,1]))
+    return f, symbolic, vararr
+    # Output:
+    # f = Polynomial function
+    # symbolic = Symbolic notation of the polynomial. Will be used for computation of Gradient and Hessien matrices.
+    # varrarr = List of polynomial variables.
