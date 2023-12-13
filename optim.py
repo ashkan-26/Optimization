@@ -38,7 +38,7 @@ class Optimizer:
             d = lambda y : -1 * np.ravel(hessianInverse(y) @ grad(y).T)
         
         e = 1e-6
-        
+
         while True:
             t = line_search(self.f, grad, x0, d(x0))
             x1 = x0 + t[0] * d(x0)
