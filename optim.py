@@ -35,9 +35,14 @@ class Optimizer:
         return f, symbolic, vararr
 
     def plot_equation(self):
-        
-        if len(self.x) == 2:
-            a_vals = np.linspace(-10, 10, 100)
+        a_vals = np.linspace(-10, 10, 100)
+
+        if len(self.x) == 1: 
+            y_values = [self.f([float(x)]) for x in a_vals]
+            self.fig , self.ax = plt.subplots()
+            self.ax.plot(a_vals,y_values)
+
+        elif len(self.x) == 2:
             b_vals = np.linspace(-10, 10, 100)
             A, B = np.meshgrid(a_vals, b_vals)
             Z = self.f([A, B])
@@ -45,13 +50,21 @@ class Optimizer:
             self.fig = plt.figure("Optimization")
             self.ax = plt.axes(projection='3d',xlabel='a')
             self.ax.plot_surface(A, B, Z, rstride=1, cstride=1,cmap='Blues', edgecolor = 'none')
-            
+        self.ax.set_title(self.symbolic)
+
+    def scatter(self,x0):
+        if len(self.x) == 1:
+            self.ax.scatter(x0[0],self.f(x0),c='red',s=50,marker='*')
+        elif len(self.x) == 2:
+            self.ax.scatter(x0[0],x0[1],self.f([x0[0],x0[1]]),c='red',s=50,marker='*')
+
     def optimize(self, mode=0):
 
         x0 = np.random.rand(len(self.x),)
         grad = self.inputModifier(sympy.lambdify(self.x, sympy.Matrix([self.symbolic]).jacobian(self.x), "numpy"))
-        self.ax.scatter(x0[0],x0[1],self.f([x0[0],x0[1]]),c='red',s=50,marker='*')
-       
+        
+        self.scatter(x0)
+
         if mode==0:
             d = lambda y: np.ravel(grad(y))
             while True:
@@ -71,7 +84,7 @@ class Optimizer:
                 
                 x0 = x1
                 
-                self.ax.scatter(x1[0],x1[1],self.f([x1[0],x1[1]]),c='black',s=5,marker='o')
+                self.scatter(x1)
                 
 
         else:
@@ -96,7 +109,7 @@ class Optimizer:
 
                 x0 = x1
 
-                self.ax.scatter(x1[0],x1[1],self.f([x1[0],x1[1]]),c='black',s=5,marker='o')
+                self.scatter(x1)
 
         print(self.symbolic, '\nMinimum point: ', x1, '\nMinimal value: ', self.f(x1))
         plt.show()
@@ -108,9 +121,10 @@ class Optimizer:
 # equation = 'a**4 + 2*a**2*b + b**2 -4*a**2 -8*a -8*b'
 # equation = 'x**2 + y**2 - 10'
 # equation= '100*x**4 - 0.01*y**4'
+# equation = '(x**2 + 1)**0.5 + (y**2 + 1)**0.5'
+# equation = '(x**2 + 1)**0.5'
 equation = '(x**2 + 1)**0.5 + (y**2 + 1)**0.5'
-# ?????? equation = '(x**2 + 1)**0.5 - y'
-
+        
 optimizer = Optimizer(equation)
 optimizer.plot_equation()
 optimizer.optimize(1)
